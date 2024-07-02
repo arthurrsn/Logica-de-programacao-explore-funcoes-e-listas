@@ -1,66 +1,111 @@
-let tentativas = 1; // contador de tentativas, começara com um e a cada tentativa adiciona 1
-let secretNumber = parseInt(Math.random() * 1000 + 1); /*
-Math.random irá pegar um número aleatório entre 0 (incluso) e 1 (excluso), ex: 0.09323245675
-Queremos que nosso programa vá até 1000, para isso multiplimos por 1000
-Como o ultimo número é excluso estamos adicionando 1, o que irá excluir o 0
-Se executarmos sem o parseInt ele irá dar os varios numeros flutuantes igual no exemplo acima
-parse Int entao estara tirando esses numeros flutuantes e transformando em um inteiro
-*/ 
+// Inicializa a lista de números sorteados
+var listaDeNumerosSorteados = [];
 
-// função que irá escrever algo na tela de acordo com a tag e o texto
-function exibirTextoNaTela(tag, texto) {
-    let campo = document.querySelector(tag); // selecionando todas os elementos referentes a tag
-    if (campo) { // Se o campo for True ou verdadeiro (exitir)
-        campo.innerHTML = texto; // colocando no html o parametro texto
+// Inicializa o contador de tentativas
+var tentativas = 1;
+
+// Define o valor máximo para os números sorteados
+var MAXNUM = 10;
+
+// Gera o número secreto inicial
+var secretNumber = gerarNumeroAleatorio(); 
+
+/**
+ * Função que gera um número aleatório entre 1 e MAXNUM.
+ * Verifica se o número já foi sorteado anteriormente e, caso tenha sido, chama a função novamente.
+ * Se todos os números já tiverem sido sorteados, reinicia a lista.
+ * 
+ * @returns {number} - Um número aleatório entre 1 e MAXNUM.
+ */
+function gerarNumeroAleatorio() {
+    let numeroEscolhido = parseInt(Math.random() * MAXNUM + 1); // Gera um número aleatório entre 1 e MAXNUM
+    let quantidadeValoresLista = listaDeNumerosSorteados.length;
+
+    // Se todos os números já tiverem sido sorteados, reinicia a lista
+    if (quantidadeValoresLista == MAXNUM) {
+        listaDeNumerosSorteados = [];
+    }
+
+    // Se o número já foi sorteado, chama a função novamente
+    if (listaDeNumerosSorteados.includes(numeroEscolhido)) {
+        return gerarNumeroAleatorio();
+    } else {
+        // Adiciona o número à lista de números sorteados e o retorna
+        listaDeNumerosSorteados.push(numeroEscolhido);
+        return numeroEscolhido;
     }
 }
 
-// Função que irá Limpar o espaço do querySelector, nesse caso o Input
+/**
+ * Função que exibe um texto na tela em um elemento HTML específico.
+ * 
+ * @param {string} tag - A tag do elemento HTML onde o texto será exibido.
+ * @param {string} texto - O texto a ser exibido.
+ */
+function exibirTextoNaTela(tag, texto) {
+    let campo = document.querySelector(tag); // Seleciona o elemento HTML correspondente à tag
+    campo.innerHTML = texto;
+}
+
+/**
+ * Função que limpa o valor do campo input.
+ */
 function limparInput() {
-    let inputVar = document.querySelector('input'); // Selecionando o primeiro input no html
-    inputVar.value = ''; // declarando que o valor desse input vai ser Null ou Nada
+    let inputVar = document.querySelector('input'); // Seleciona o primeiro input no HTML
+    inputVar.value = ''; // Define o valor do input como vazio
 }
 
-// função que ao clicar no botao NOVO JOGO irá ser executada, assim criando um novo jogo.
+/**
+ * Função que reinicia o jogo, gerando um novo número secreto e resetando as tentativas.
+ * Também desabilita o botão de reiniciar e habilita o botão de chute.
+ */
 function reiniciarJogo() {
-    secretNumber = parseInt(Math.random() * 1000 + 1); // novamente pegando o valor do secret number
-    limparInput(); // limpando campo input
-    tentativas = 1; // declarando que a cada jogo as tentativas sao iguais a 1
-    initialCode(); // escopo inicial
-    document.getElementById('reiniciar').setAttribute('disabled', true); // declarando que o botao de novo jogo ficara indisponivel no começo da nova rodada
-    document.getElementById('Chutar').removeAttribute('disabled'); // habilitando o botao chute novamente, pois tinha sido desabilitado até que um novo jogo iniciasse
+    secretNumber = gerarNumeroAleatorio(); // Gera um novo número secreto
+    limparInput(); // Limpa o campo input
+    tentativas = 1; // Reseta o contador de tentativas
+    initialCode(); // Chama o código inicial para resetar a interface
+    document.getElementById('reiniciar').setAttribute('disabled', true); // Desabilita o botão de reiniciar
+    document.getElementById('Chutar').removeAttribute('disabled'); // Habilita o botão de chute
 }
 
-// verificando o chute e falando se acertou ou errou
+/**
+ * Função que verifica o chute do usuário e exibe mensagens de acerto ou erro.
+ * Se o chute estiver correto, exibe uma mensagem de sucesso e habilita o botão de reiniciar.
+ * Se o chute estiver incorreto, exibe uma dica e incrementa o contador de tentativas.
+ */
 function verificarChute() {
-    let chute = document.querySelector('input').value; //verificando o valor digitado no input
-    chute = parseInt(chute); // transformando o nosso Chute em um Inteiro caso digitem um Float
+    let chute = document.querySelector('input').value; // Obtém o valor do input
+    chute = parseInt(chute); // Converte o valor do chute para inteiro
 
-    if (chute == secretNumber) { //se o chute for igual ao numero secreto aparecera as mensagens abaixo
+    // Verifica se o chute está correto
+    if (chute == secretNumber) {
         exibirTextoNaTela('h1', 'Acertou');
-        exibirTextoNaTela('p', `Você descobriu o número secreto com ${tentativas} ${tentativas == 1 ? 'tentativa' : 'tentativas'}!`); // se tentativas for == que 1 ele exibe 'tentativa', caso contrario, exibe 'tentativas', // paragrafo
-        if (tentativas == 1) { //verificando se tentativas é igual a 1, pois se for, precisamos que ele remova o atributo do novo jogo antes de declarar que o botao chute esta desabilitado
-        document.getElementById('reiniciar').removeAttribute('disabled'); // removendo disabled do id 'reiniciar'
+        exibirTextoNaTela('p', `Você descobriu o número secreto com ${tentativas} ${tentativas == 1 ? 'tentativa' : 'tentativas'}!`);
+        if (tentativas == 1) {
+            document.getElementById('reiniciar').removeAttribute('disabled'); // Habilita o botão de reiniciar
         }
-        document.getElementById('Chutar').setAttribute('disabled', true); // adicionando disabled como verdadeiro/funcionando
+        document.getElementById('Chutar').setAttribute('disabled', true); // Desabilita o botão de chute
     } else {
-        if (secretNumber > chute) { //se o chute nao for igual ele entra em uma outra condicional verificando se o numero é maior ou menor, assim podendo dar dica
+        // Fornece uma dica se o chute estiver incorreto
+        if (secretNumber > chute) {
             exibirTextoNaTela('p', 'O número é maior...');
         } else {
             exibirTextoNaTela('p', 'O número é menor...');
         }
-        tentativas++; // adicionando 1 a tentativas
-        limparInput() // limpando o campo com a função
+        tentativas++; // Incrementa o contador de tentativas
+        limparInput(); // Limpa o campo input
     }
-    document.getElementById('reiniciar').removeAttribute('disabled'); // removendo disabled do id 'reiniciar'
+    document.getElementById('reiniciar').removeAttribute('disabled'); // Habilita o botão de reiniciar
 }
 
-// Código inicial que apenas contem o titulo e o paragrafo
+/**
+ * Função inicial que configura a interface do jogo.
+ * Exibe o título e a instrução inicial na tela.
+ */
 function initialCode() {
-    //escopo inicial
-    exibirTextoNaTela('h1', 'NUMBER SECRET'); 
-    exibirTextoNaTela('p', 'Escolha um número de 1 a 1000');
+    exibirTextoNaTela('h1', 'NUMBER SECRET');
+    exibirTextoNaTela('p', `Escolha um número de 1 a ${MAXNUM}`);
 }
 
-//rodando
+// Executa a função inicial para configurar a interface do jogo
 initialCode();
